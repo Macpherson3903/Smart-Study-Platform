@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdOrThrow } from "@/lib/auth";
-import { generateOptionsSchema } from "@/lib/ai/studyContentSchema";
+import { generateOptionsSchema, studyContentSchema } from "@/lib/ai/studyContentSchema";
 import { GeminiError } from "@/lib/gemini";
 import { generateStudySession } from "@/server/services/studyGenerationService";
 
@@ -44,7 +44,14 @@ export async function POST(req: Request) {
     return jsonError("Invalid request body", "INVALID_REQUEST", 400, requestId);
   }
 
-  const userId = await getUserIdOrThrow();
+  let userId: string;
+  try {
+    userId = await getUserIdOrThrow();
+  } catch {
+    return jsonError("Unauthenticated", "UNAUTHENTICATED", 401, requestId, {
+      "x-request-id": requestId,
+    });
+  }
 
   if (parsed.data.userId && parsed.data.userId !== userId) {
     return jsonError("Forbidden", "USER_MISMATCH", 403, requestId);
@@ -58,8 +65,31 @@ export async function POST(req: Request) {
       idempotencyKey: parsed.data.idempotencyKey,
     });
 
+    if (created.status !== "complete") {
+      return jsonError(
+        created.status === "pending"
+          ? "Your session is still generating. Please try again shortly."
+          : created.error.message,
+        created.status === "pending" ? "SESSION_PENDING" : created.error.code,
+        created.status === "pending" ? 202 : 409,
+        requestId,
+        { "x-request-id": requestId },
+      );
+    }
+
+    const validatedContent = studyContentSchema.safeParse(created.result?.content);
+    if (!validatedContent.success) {
+      return jsonError(
+        "The AI service returned an invalid response. Please try again.",
+        "GEMINI_INVALID_RESPONSE",
+        502,
+        requestId,
+        { "x-request-id": requestId },
+      );
+    }
+
     return NextResponse.json(
-      { id: created.id, content: created.result.content },
+      { id: created.id, content: validatedContent.data },
       {
         status: 201,
         headers: { "x-request-id": requestId },

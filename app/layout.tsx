@@ -15,8 +15,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body>{children}</body>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          suppressHydrationWarning
+          className="min-h-dvh bg-slate-50 text-slate-900 antialiased"
+        >
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );
