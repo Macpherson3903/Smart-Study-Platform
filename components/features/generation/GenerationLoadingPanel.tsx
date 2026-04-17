@@ -19,4 +19,3 @@ export function GenerationLoadingPanel(props: { label?: string }) {
     </Card>
   );
 }
-

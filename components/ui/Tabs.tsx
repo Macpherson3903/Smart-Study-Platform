@@ -143,7 +143,9 @@ export function TabsList({
 
         if (e.key === prevKey) {
           e.preventDefault();
-          focusAndMaybeSelect(tabs[(currentIndex - 1 + tabs.length) % tabs.length]);
+          focusAndMaybeSelect(
+            tabs[(currentIndex - 1 + tabs.length) % tabs.length],
+          );
         }
       }}
     />
@@ -212,4 +214,3 @@ function triggerId(baseId: string, value: string) {
 function contentId(baseId: string, value: string) {
   return `tabs-${baseId}-content-${value}`;
 }
-

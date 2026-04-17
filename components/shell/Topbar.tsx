@@ -81,4 +81,3 @@ function MenuIcon() {
     </svg>
   );
 }
-

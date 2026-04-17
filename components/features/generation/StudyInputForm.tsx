@@ -7,6 +7,7 @@ import type { GenerateOptions } from "@/lib/ai/studyContentSchema";
 
 import { GenerationLoadingPanel } from "@/components/features/generation/GenerationLoadingPanel";
 import { GenerateOptionsPanel } from "@/components/features/generation/GenerateOptions";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Textarea } from "@/components/ui/Textarea";
@@ -30,9 +31,13 @@ export function StudyInputForm() {
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(null);
+  const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(
+    null,
+  );
 
-  const [idempotencyKey, setIdempotencyKey] = useState(() => createIdempotencyKey());
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    createIdempotencyKey(),
+  );
   const [submittedText, setSubmittedText] = useState<string | null>(null);
 
   const trimmed = inputText.trim();
@@ -40,9 +45,22 @@ export function StudyInputForm() {
   const isBusy = status === "submitting" || status === "polling";
 
   const shouldAutoFocus = useMemo(
-    () => searchParams.get("focus") === "1",
+    () =>
+      searchParams.get("focus") === "1" || searchParams.get("retry") === "1",
     [searchParams],
   );
+
+  useEffect(() => {
+    if (searchParams.get("retry") === "1") {
+      const stored = sessionStorage.getItem("retry-input-text");
+      if (stored) {
+        setInputText(stored);
+        sessionStorage.removeItem("retry-input-text");
+        setIdempotencyKey(createIdempotencyKey());
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!shouldAutoFocus) return;
@@ -82,7 +100,7 @@ export function StudyInputForm() {
 
     if (res.status === 201) {
       const data = json as { id: string };
-      router.push(`/sessions/${data.id}`);
+      router.push(`/sessions/${data.id}?new=1`);
       return;
     }
 
@@ -148,7 +166,8 @@ export function StudyInputForm() {
               {remaining.toLocaleString("en-US")} characters remaining
             </span>
             <span className="text-slate-500">
-              {inputText.length.toLocaleString("en-US")}/{REQUEST_MAX_CHARS.toLocaleString("en-US")}
+              {inputText.length.toLocaleString("en-US")}/
+              {REQUEST_MAX_CHARS.toLocaleString("en-US")}
             </span>
           </div>
         </CardContent>
@@ -173,21 +192,29 @@ export function StudyInputForm() {
       {isBusy ? <GenerationLoadingPanel /> : null}
 
       {status === "error" && error ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-4">
-            <p className="text-sm font-semibold text-red-800">Couldn’t generate</p>
-            <p className="mt-1 text-sm text-red-700">{error}</p>
-            {typeof retryAfterSeconds === "number" ? (
-              <p className="mt-2 text-sm text-red-700">
-                Try again in about {Math.max(1, Math.round(retryAfterSeconds))}s.
-              </p>
-            ) : null}
-          </CardContent>
-        </Card>
+        <Alert
+          tone="error"
+          title="Couldn’t generate"
+          description={error}
+          action={{
+            label: "Try again",
+            onClick: () => void submitOnce(),
+          }}
+        >
+          {typeof retryAfterSeconds === "number" ? (
+            <p>
+              Try again in about {Math.max(1, Math.round(retryAfterSeconds))}s.
+            </p>
+          ) : null}
+        </Alert>
       ) : null}
 
       <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/80 p-3 backdrop-blur">
-        <Button type="submit" isLoading={isBusy} disabled={trimmed.length === 0}>
+        <Button
+          type="submit"
+          isLoading={isBusy}
+          disabled={trimmed.length === 0}
+        >
           Generate
         </Button>
         <Button
@@ -221,4 +248,3 @@ function validateInput(text: string) {
 function createIdempotencyKey() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
-

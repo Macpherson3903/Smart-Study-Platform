@@ -15,4 +15,3 @@ export function SessionStatusBadge(props: { status: StudySessionStatus }) {
 
   return <Badge variant="danger">Error</Badge>;
 }
-

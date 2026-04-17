@@ -3,17 +3,18 @@
 import type { StudyContent } from "@/lib/ai/studyContentSchema";
 
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export function SummaryPanel(props: { content: StudyContent }) {
   const text = props.content.summary?.trim();
 
   if (!text) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-10 text-center text-sm text-slate-600">
-          Summary was not generated for this session.
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="Summary wasn’t generated"
+        description="Regenerate this session with summary enabled to read it here."
+        action={{ label: "New session", href: "/sessions/new" }}
+      />
     );
   }
 
@@ -27,4 +28,3 @@ export function SummaryPanel(props: { content: StudyContent }) {
     </Card>
   );
 }
-

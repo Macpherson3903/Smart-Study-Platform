@@ -1,6 +1,9 @@
 import type { Document } from "mongodb";
 
-import type { GenerateOptions, StudyContent } from "@/lib/ai/studyContentSchema";
+import type {
+  GenerateOptions,
+  StudyContent,
+} from "@/lib/ai/studyContentSchema";
 import {
   STUDY_CONTENT_KIND,
   STUDY_CONTENT_PROMPT_VERSION,
@@ -27,6 +30,11 @@ interface StudySessionBaseDocument extends Document {
   inputText: string;
   inputTextPreview?: string;
   idempotencyKey?: string;
+  /**
+   * Deterministic hash of (userId, inputText, options) used to reuse prior
+   * complete sessions without re-calling Gemini. Populated on insert.
+   */
+  contentHash?: string;
   aiMeta: StudySessionAiMeta;
   status: StudySessionStatus;
   createdAt: Date;
@@ -57,16 +65,17 @@ export interface InsertPendingStudySessionInput {
   inputText: string;
   inputTextPreview?: string;
   idempotencyKey?: string;
+  contentHash?: string;
   aiMeta: StudySessionAiMeta;
 }
 
 export interface StudySessionListItem {
   id: string;
   inputTextPreview: string;
+  inputText?: string;
   status: StudySessionStatus;
   result?: StudyContent;
   error?: StudySessionError;
   createdAt: string;
   updatedAt: string;
 }
-

@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { currentUser } from "@clerk/nextjs/server";
+
+export const metadata: Metadata = { title: "Dashboard" };
 
 import { SessionCard } from "@/components/features/sessions/SessionCard";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -33,7 +36,9 @@ export default async function DashboardPage() {
 
       <section>
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-slate-900">Quick actions</h3>
+          <h3 className="text-sm font-semibold text-slate-900">
+            Quick actions
+          </h3>
         </div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -102,4 +107,3 @@ function QuickActionCard(props: {
     </Link>
   );
 }
-

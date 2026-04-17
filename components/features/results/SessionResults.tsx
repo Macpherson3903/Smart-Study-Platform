@@ -1,53 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import type { StudyContent } from "@/lib/ai/studyContentSchema";
 import type { StudySessionListItem } from "@/models/StudySession";
+import { toast } from "@/lib/toast";
+import { usePollSession } from "@/hooks/usePollSession";
 
 import { ResultsTabs } from "@/components/features/results/ResultsTabs";
 import { GenerationLoadingPanel } from "@/components/features/generation/GenerationLoadingPanel";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { SessionStatusBadge } from "@/components/features/sessions/SessionStatusBadge";
 
 export function SessionResults(props: { initial: StudySessionListItem }) {
-  const [session, setSession] = useState<StudySessionListItem>(props.initial);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { session, isRefreshing, error, setError, refresh } = usePollSession(
+    props.initial,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const shouldPoll = session.status === "pending";
+  const content =
+    session.status === "complete" && session.result
+      ? (session.result as StudyContent)
+      : null;
+  const hasFlashcards = content ? content.flashcards.length > 0 : false;
+  const hasQuestions = content ? content.questions.length > 0 : false;
 
-  async function refresh() {
-    setIsRefreshing(true);
+  async function deleteSession() {
+    if (!window.confirm("Delete this session? This cannot be undone.")) return;
+    setIsDeleting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sessions/${session.id}`, { method: "GET" });
-      const json = (await res.json()) as unknown;
-      if (!res.ok) {
-        const message =
-          typeof json === "object" && json && "error" in json
-            ? String((json as { error?: unknown }).error ?? "Request failed")
-            : "Request failed";
-        setError(message);
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok || res.status === 204) {
+        toast.success("Session deleted");
+        router.push("/sessions");
         return;
       }
-      setSession(json as StudySessionListItem);
+      toast.error("Failed to delete session", {
+        action: { label: "Retry", onClick: () => void deleteSession() },
+      });
     } catch {
-      setError("Failed to refresh session. Please try again.");
+      toast.error("Failed to delete session", {
+        description: "Please check your connection and try again.",
+        action: { label: "Retry", onClick: () => void deleteSession() },
+      });
     } finally {
-      setIsRefreshing(false);
+      setIsDeleting(false);
     }
   }
-
-  useEffect(() => {
-    if (!shouldPoll) return;
-    const t = window.setTimeout(() => {
-      void refresh();
-    }, 1500);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldPoll, session.updatedAt]);
 
   return (
     <div className="space-y-6">
@@ -64,52 +72,132 @@ export function SessionResults(props: { initial: StudySessionListItem }) {
           </p>
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          isLoading={isRefreshing}
-          onClick={() => void refresh()}
-        >
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {hasFlashcards && (
+            <ButtonLink
+              href={`/sessions/${session.id}/flashcards`}
+              variant="secondary"
+              size="sm"
+            >
+              <FlashcardIcon />
+              Study Flashcards
+            </ButtonLink>
+          )}
+          {hasQuestions && (
+            <ButtonLink
+              href={`/sessions/${session.id}/practice`}
+              variant="secondary"
+              size="sm"
+            >
+              <PracticeIcon />
+              Practice Mode
+            </ButtonLink>
+          )}
+          <Button
+            variant="secondary"
+            size="sm"
+            isLoading={isRefreshing}
+            onClick={() => void refresh()}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            isLoading={isDeleting}
+            onClick={() => void deleteSession()}
+          >
+            Delete
+          </Button>
+        </div>
       </div>
 
       {error ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-4">
-            <p className="text-sm font-semibold text-red-800">Error</p>
-            <p className="mt-1 text-sm text-red-700">{error}</p>
-          </CardContent>
-        </Card>
+        <Alert
+          tone="error"
+          title="Something went wrong"
+          description={error}
+          action={{ label: "Dismiss", onClick: () => setError(null) }}
+        />
       ) : null}
 
       {session.status === "pending" ? (
-        <GenerationLoadingPanel label="Still generating… this can take a moment." />
+        <>
+          <GenerationLoadingPanel label="Still generating… this can take a moment." />
+          <ResultsTabsSkeleton />
+        </>
       ) : null}
 
       {session.status === "error" ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-4">
-            <p className="text-sm font-semibold text-red-800">Generation failed</p>
-            <p className="mt-1 text-sm text-red-700">
-              {session.error?.message ?? "This session failed to generate."}
-            </p>
-            <div className="mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => (window.location.href = "/sessions/new")}
-              >
-                Try again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert
+          tone="error"
+          title="Generation failed"
+          description={
+            session.error?.message ?? "This session failed to generate."
+          }
+          action={{
+            label: "Retry with same text",
+            onClick: () => {
+              if (session.inputText) {
+                sessionStorage.setItem("retry-input-text", session.inputText);
+              }
+              router.push("/sessions/new?retry=1");
+            },
+          }}
+        />
       ) : null}
 
-      {session.status === "complete" && session.result ? (
-        <ResultsTabs content={session.result as StudyContent} />
-      ) : null}
+      {content ? <ResultsTabs content={content} /> : null}
     </div>
   );
 }
 
+function ResultsTabsSkeleton() {
+  return (
+    <Card aria-hidden="true">
+      <CardContent className="py-4">
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="mt-4 space-y-2">
+          <Skeleton className="h-3 w-11/12" />
+          <Skeleton className="h-3 w-10/12" />
+          <Skeleton className="h-3 w-9/12" />
+          <Skeleton className="h-3 w-8/12" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FlashcardIcon() {
+  return (
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" />
+    </svg>
+  );
+}
+
+function PracticeIcon() {
+  return (
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}

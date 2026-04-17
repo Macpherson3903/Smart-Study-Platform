@@ -1,6 +1,10 @@
 import "server-only";
 
-import { ApiError, GoogleGenAI, type GenerateContentResponse } from "@google/genai";
+import {
+  ApiError,
+  GoogleGenAI,
+  type GenerateContentResponse,
+} from "@google/genai";
 import { env } from "@/lib/env";
 import {
   generateOptionsSchema,
@@ -70,9 +74,13 @@ export type NormalizedGeminiCompletion = {
 };
 
 /** Primary → fallback → backup (Gemini API model resource names). */
-export const MODELS = [
-  "models/gemini-3.1-flash-lite-preview",
-] as const;
+export const MODELS = ["models/gemini-3.1-flash-lite-preview"] as const;
+
+// Streaming is intentionally NOT implemented:
+// - `responseJsonSchema` requires a complete response for schema validation.
+// - Streaming JSON would force brittle partial-JSON parsing on the client,
+//   with no meaningful UX gain for typical ≤4s completions.
+// If we ever drop strict JSON-schema output, revisit `generateContentStream`.
 
 const RETRY_BACKOFF_MS = [2000, 5000, 10_000] as const;
 const ATTEMPTS_PER_MODEL = 1 + RETRY_BACKOFF_MS.length;
@@ -120,11 +128,7 @@ function isNetworkishFailure(err: unknown): boolean {
   }
 
   const message =
-    err instanceof Error
-      ? err.message
-      : typeof err === "string"
-        ? err
-        : "";
+    err instanceof Error ? err.message : typeof err === "string" ? err : "";
   return /fetch failed|network|socket|ECONNRESET|ENOTFOUND|ETIMEDOUT|ECONNREFUSED/i.test(
     message,
   );
@@ -166,8 +170,10 @@ function isRetryableForResilience(err: unknown): boolean {
 }
 
 function getHttpStatus(err: unknown): number | undefined {
-  if (err instanceof ApiError && typeof err.status === "number") return err.status;
-  if (err instanceof GeminiError && typeof err.status === "number") return err.status;
+  if (err instanceof ApiError && typeof err.status === "number")
+    return err.status;
+  if (err instanceof GeminiError && typeof err.status === "number")
+    return err.status;
   if (typeof (err as { status?: unknown } | undefined)?.status === "number") {
     return (err as { status: number }).status;
   }
@@ -215,6 +221,19 @@ function parseAndValidateStudyContent(
       code: "GEMINI_INVALID_RESPONSE",
       cause,
     });
+  }
+
+  // The model only emits enabled sections (see buildStudyContentSystemPrompt).
+  // Fill missing sections with empty defaults so strict validation passes and
+  // downstream consumers can rely on a full StudyContent shape.
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    const obj = parsed as Record<string, unknown>;
+    if (!options.summary) {
+      if (!("summary" in obj)) obj.summary = "";
+      if (!("key_points" in obj)) obj.key_points = [];
+    }
+    if (!options.questions && !("questions" in obj)) obj.questions = [];
+    if (!options.flashcards && !("flashcards" in obj)) obj.flashcards = [];
   }
 
   const validated = studyContentSchema.safeParse(parsed);
@@ -334,7 +353,8 @@ function getGeminiResponsePayload(response: unknown): unknown {
   };
 
   const candidates = res.candidates;
-  const hasTopLevelCandidates = Array.isArray(candidates) && candidates.length > 0;
+  const hasTopLevelCandidates =
+    Array.isArray(candidates) && candidates.length > 0;
   const hasTopLevelPromptFeedback =
     Boolean(res.promptFeedback) && typeof res.promptFeedback === "object";
 
@@ -356,7 +376,9 @@ function normalizeGeminiResponse(
   response: unknown,
   sessionId?: string,
 ): NormalizedGeminiCompletion {
-  const payload = getGeminiResponsePayload(response) as GeminiPayloadShape | undefined;
+  const payload = getGeminiResponsePayload(response) as
+    | GeminiPayloadShape
+    | undefined;
 
   const candidates = payload?.candidates;
   if (!Array.isArray(candidates) || candidates.length === 0) {
@@ -447,16 +469,74 @@ export async function generateStudyContent(
   const options = generateOptionsSchema.parse(optionsInput ?? {});
   const sessionId = context?.sessionId;
 
-  const systemInstruction = buildStudyContentSystemPrompt();
+  const systemInstruction = buildStudyContentSystemPrompt(options);
   const userPrompt = buildStudyContentUserPrompt({ inputText, options });
 
   const ai = getClient();
 
+  // Scale output tokens with the number of enabled sections so we never pay
+  // for tokens we won't emit. Base covers the JSON skeleton; each enabled
+  // section gets an allotment that empirically fits its content.
+  const sectionBudgets = {
+    summary: 500,
+    questions: 900,
+    flashcards: 700,
+  } as const;
+  const enabledBudget =
+    (options.summary ? sectionBudgets.summary : 0) +
+    (options.questions ? sectionBudgets.questions : 0) +
+    (options.flashcards ? sectionBudgets.flashcards : 0);
+  const maxOutputTokens = Math.max(300, enabledBudget + 200);
+
   const baseConfig = {
     systemInstruction,
     temperature: 0.2,
-    maxOutputTokens: 2000,
+    maxOutputTokens,
   } as const;
+
+  // Build a responseJsonSchema that ONLY includes enabled sections so the
+  // model does not waste output tokens on fields we intend to drop.
+  const schemaProperties: Record<string, unknown> = {};
+  const schemaRequired: string[] = [];
+
+  if (options.summary) {
+    schemaProperties.summary = { type: "string" };
+    schemaProperties.key_points = { type: "array", items: { type: "string" } };
+    schemaRequired.push("summary", "key_points");
+  }
+
+  if (options.questions) {
+    schemaProperties.questions = {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["question", "answer", "key_points"],
+        properties: {
+          question: { type: "string" },
+          answer: { type: "string" },
+          key_points: { type: "array", items: { type: "string" } },
+        },
+      },
+    };
+    schemaRequired.push("questions");
+  }
+
+  if (options.flashcards) {
+    schemaProperties.flashcards = {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["front", "back"],
+        properties: {
+          front: { type: "string" },
+          back: { type: "string" },
+        },
+      },
+    };
+    schemaRequired.push("flashcards");
+  }
 
   const schemaConfig = {
     ...baseConfig,
@@ -465,24 +545,8 @@ export async function generateStudyContent(
     responseJsonSchema: {
       type: "object",
       additionalProperties: false,
-      required: ["summary", "key_points", "questions", "flashcards"],
-      properties: {
-        summary: { type: "string" },
-        key_points: { type: "array", items: { type: "string" } },
-        questions: { type: "array", items: { type: "string" } },
-        flashcards: {
-          type: "array",
-          items: {
-            type: "object",
-            additionalProperties: false,
-            required: ["front", "back"],
-            properties: {
-              front: { type: "string" },
-              back: { type: "string" },
-            },
-          },
-        },
-      },
+      required: schemaRequired,
+      properties: schemaProperties,
     },
   } as const;
 
@@ -520,14 +584,19 @@ export async function generateStudyContent(
     return parseAndValidateStudyContent(normalized.result.content, options);
   };
 
-  const trySchemaThenJsonMime = async (model: string): Promise<StudyContent> => {
+  const trySchemaThenJsonMime = async (
+    model: string,
+  ): Promise<StudyContent> => {
     try {
       return await callModelWithConfig({
         model,
         config: schemaConfig as unknown as Record<string, unknown>,
       });
     } catch (err) {
-      if (err instanceof GeminiError && err.code === "GEMINI_INVALID_RESPONSE") {
+      if (
+        err instanceof GeminiError &&
+        err.code === "GEMINI_INVALID_RESPONSE"
+      ) {
         return await callModelWithConfig({
           model,
           config: jsonOnlyConfig as unknown as Record<string, unknown>,
@@ -570,7 +639,10 @@ export async function generateStudyContent(
         if (err instanceof GeminiError && err.code === "GEMINI_RATE_LIMITED") {
           throw err;
         }
-        if (err instanceof GeminiError && err.code === "GEMINI_SAFETY_BLOCKED") {
+        if (
+          err instanceof GeminiError &&
+          err.code === "GEMINI_SAFETY_BLOCKED"
+        ) {
           throw err;
         }
 
@@ -597,4 +669,3 @@ export async function generateStudyContent(
 
   throw new GeminiError("GEMINI_UNAVAILABLE");
 }
-

@@ -36,6 +36,32 @@ export async function ensureStudySessionIndexes(): Promise<void> {
       partialFilterExpression: { idempotencyKey: { $exists: true } },
     },
   );
+
+  // Content-hash reuse: fast lookup of a user's prior COMPLETE session for the
+  // same input text + options. Non-unique so pending/error sessions don't
+  // collide with a later success for the same hash.
+  await col.createIndex(
+    { userId: 1, contentHash: 1, status: 1, createdAt: -1 },
+    {
+      partialFilterExpression: {
+        contentHash: { $exists: true },
+        status: "complete",
+      },
+    },
+  );
+
+  // Full-text search across input text and generated summary. MongoDB allows
+  // at most one text index per collection, so inputText and result.summary
+  // must share a single weighted index. `inputText` is weighted higher so
+  // matches in the user's pasted notes rank above AI-generated summary hits.
+  await col.createIndex(
+    { inputText: "text", "result.summary": "text" },
+    {
+      name: "studySessions_text_search",
+      weights: { inputText: 3, "result.summary": 1 },
+      default_language: "english",
+    },
+  );
 }
 
 export async function insertPendingStudySession(
@@ -61,6 +87,9 @@ export async function insertPendingStudySession(
     ...(typeof input.idempotencyKey === "string"
       ? { idempotencyKey: input.idempotencyKey }
       : {}),
+    ...(typeof input.contentHash === "string"
+      ? { contentHash: input.contentHash }
+      : {}),
   };
 
   const result = await col.insertOne(doc);
@@ -76,6 +105,26 @@ export async function findStudySessionByIdempotencyKey(input: {
     userId: input.userId,
     idempotencyKey: input.idempotencyKey,
   });
+}
+
+/**
+ * Find the most recent COMPLETE session for this user that matches the given
+ * content hash. Used to skip a paid Gemini call when the same user resubmits
+ * identical input text + options.
+ */
+export async function findCompleteStudySessionByContentHash(input: {
+  userId: string;
+  contentHash: string;
+}): Promise<(StudySessionDocument & { _id: ObjectId }) | null> {
+  const col = await getCollection();
+  return await col.findOne(
+    {
+      userId: input.userId,
+      contentHash: input.contentHash,
+      status: "complete",
+    },
+    { sort: { createdAt: -1, _id: -1 } },
+  );
 }
 
 export async function findStudySessionById(input: {
@@ -140,6 +189,7 @@ export async function findStudySessionsByUserIdPaginated(input: {
   userId: string;
   limit: number;
   cursor?: StudySessionCursor;
+  q?: string;
 }): Promise<{
   sessions: Array<StudySessionDocument & { _id: ObjectId }>;
   hasMore: boolean;
@@ -149,6 +199,11 @@ export async function findStudySessionsByUserIdPaginated(input: {
 
   const filter: Record<string, unknown> = { userId: input.userId };
 
+  const trimmedQ = input.q?.trim();
+  if (trimmedQ) {
+    filter["$text"] = { $search: trimmedQ };
+  }
+
   if (input.cursor) {
     filter["$or"] = [
       { createdAt: { $lt: input.cursor.createdAt } },
@@ -156,6 +211,8 @@ export async function findStudySessionsByUserIdPaginated(input: {
     ];
   }
 
+  // Recency-ordered even with text search: users expect "find my last session
+  // about X" to surface the most recent match, not the highest-scoring one.
   const docs = await col
     .find(filter)
     .sort({ createdAt: -1, _id: -1 })
@@ -166,9 +223,20 @@ export async function findStudySessionsByUserIdPaginated(input: {
   const page = hasMore ? docs.slice(0, input.limit) : docs;
 
   const last = page.at(-1);
-  const nextCursor = last ? { createdAt: last.createdAt, id: last._id } : undefined;
+  const nextCursor = last
+    ? { createdAt: last.createdAt, id: last._id }
+    : undefined;
 
   return { sessions: page, hasMore, nextCursor };
+}
+
+export async function deleteStudySessionById(input: {
+  userId: string;
+  id: ObjectId;
+}): Promise<boolean> {
+  const col = await getCollection();
+  const res = await col.deleteOne({ _id: input.id, userId: input.userId });
+  return res.deletedCount > 0;
 }
 
 export function toObjectId(id: string): ObjectId {
@@ -186,4 +254,3 @@ export function buildAiMeta(input: {
     options: input.options,
   };
 }
-

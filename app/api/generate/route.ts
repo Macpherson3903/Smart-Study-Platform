@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserIdOrThrow } from "@/lib/auth";
-import { generateOptionsSchema, studyContentSchema } from "@/lib/ai/studyContentSchema";
+import { generateOptionsSchema } from "@/lib/ai/studyContentSchema";
 import { GeminiError } from "@/lib/gemini";
+import { logger } from "@/lib/logger";
 import { generateStudySession } from "@/server/services/studyGenerationService";
+import { consumeGenerateQuota } from "@/server/services/rateLimitService";
 
 const REQUEST_MAX_CHARS = 20_000;
 
@@ -57,6 +59,35 @@ export async function POST(req: Request) {
     return jsonError("Forbidden", "USER_MISMATCH", 403, requestId);
   }
 
+  // Per-user AI generation quota. Enforced BEFORE any paid work. Signed-in
+  // users are bucketed; unauthenticated requests never reach this point.
+  const quota = await consumeGenerateQuota({ userId });
+  if (!quota.allowed) {
+    logger.warn("generate.rate_limited", {
+      userId,
+      reason: quota.reason,
+      limit: quota.limit,
+      requestId,
+    });
+    const headers: HeadersInit = {
+      "x-request-id": requestId,
+      "retry-after": String(quota.retryAfterSeconds),
+      "x-ratelimit-limit": String(quota.limit),
+      "x-ratelimit-scope": quota.reason.toLowerCase(),
+    };
+    const message =
+      quota.reason === "DAILY"
+        ? "You've hit your daily generation limit. Try again tomorrow."
+        : "You're generating too quickly. Please slow down and try again in a moment.";
+    return jsonError(
+      message,
+      quota.reason === "DAILY" ? "RATE_LIMITED_DAILY" : "RATE_LIMITED_BURST",
+      429,
+      requestId,
+      headers,
+    );
+  }
+
   try {
     const created = await generateStudySession({
       userId,
@@ -77,19 +108,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const validatedContent = studyContentSchema.safeParse(created.result?.content);
-    if (!validatedContent.success) {
-      return jsonError(
-        "The AI service returned an invalid response. Please try again.",
-        "GEMINI_INVALID_RESPONSE",
-        502,
-        requestId,
-        { "x-request-id": requestId },
-      );
-    }
-
+    // Content is already validated inside generateStudyContent via
+    // studyContentSchema before it is persisted, so we trust it here and
+    // avoid the redundant safeParse.
     return NextResponse.json(
-      { id: created.id, content: validatedContent.data },
+      { id: created.id, content: created.result.content },
       {
         status: 201,
         headers: { "x-request-id": requestId },
@@ -140,6 +163,7 @@ export async function POST(req: Request) {
       );
     }
 
+    logger.exception(err, { route: "api.generate", userId, requestId });
     return jsonError(
       "Internal server error",
       "INTERNAL_ERROR",
@@ -149,4 +173,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

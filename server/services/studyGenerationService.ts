@@ -1,16 +1,22 @@
 import "server-only";
 
 import { GeminiError, MODELS, generateStudyContent } from "@/lib/gemini";
+import { logger } from "@/lib/logger";
 import {
+  computeContentHash,
   generateOptionsSchema,
   STUDY_CONTENT_KIND,
   STUDY_CONTENT_PROMPT_VERSION,
   type GenerateOptions,
   type StoredStudyResult,
 } from "@/lib/ai/studyContentSchema";
-import type { StudySessionAiMeta, StudySessionError } from "@/models/StudySession";
+import type {
+  StudySessionAiMeta,
+  StudySessionError,
+} from "@/models/StudySession";
 import {
   ensureStudySessionIndexes,
+  findCompleteStudySessionByContentHash,
   findStudySessionByIdempotencyKey,
   insertPendingStudySession,
   updateStudySessionToCompleteByIdIfStatus,
@@ -85,7 +91,11 @@ export async function generateStudySession(input: {
           aiMeta: existing.aiMeta,
         });
 
-        return { status: "complete", id: existing._id.toString(), result: stored };
+        return {
+          status: "complete",
+          id: existing._id.toString(),
+          result: stored,
+        };
       }
 
       if (existing.status === "pending") {
@@ -93,9 +103,41 @@ export async function generateStudySession(input: {
       }
 
       if (existing.status === "error" && "error" in existing) {
-        return { status: "error", id: existing._id.toString(), error: existing.error };
+        return {
+          status: "error",
+          id: existing._id.toString(),
+          error: existing.error,
+        };
       }
     }
+  }
+
+  // Cost optimization: reuse this user's prior COMPLETE session for the same
+  // input text + options. Skips the paid Gemini call entirely. Defense in
+  // depth against clients that forget to send an idempotencyKey.
+  const contentHash = await computeContentHash(
+    input.userId,
+    input.inputText,
+    options,
+  );
+
+  const cached = await findCompleteStudySessionByContentHash({
+    userId: input.userId,
+    contentHash,
+  });
+
+  if (cached && cached.status === "complete" && "result" in cached) {
+    const stored = buildStoredStudyResult({
+      content: cached.result,
+      aiMeta: cached.aiMeta,
+    });
+
+    logger.info("ai.cache_hit", {
+      userId: input.userId,
+      sessionId: cached._id.toString(),
+    });
+
+    return { status: "complete", id: cached._id.toString(), result: stored };
   }
 
   const created = await insertPendingStudySession({
@@ -103,15 +145,20 @@ export async function generateStudySession(input: {
     inputText: input.inputText,
     inputTextPreview,
     idempotencyKey: input.idempotencyKey,
+    contentHash,
     aiMeta,
   });
 
   const id = created._id;
 
   try {
-    const { content, modelUsed } = await generateStudyContent(input.inputText, options, {
-      sessionId: id.toString(),
-    });
+    const { content, modelUsed } = await generateStudyContent(
+      input.inputText,
+      options,
+      {
+        sessionId: id.toString(),
+      },
+    );
     const stored = buildStoredStudyResult({
       content,
       aiMeta: { ...aiMeta, model: modelUsed },
@@ -129,9 +176,10 @@ export async function generateStudySession(input: {
     return { status: "complete", id: id.toString(), result: stored };
   } catch (err) {
     if (err instanceof GeminiError && err.code === "GEMINI_UNAVAILABLE") {
-      console.log(
-        `[AI] Session ${id.toString()}: all models exhausted (GEMINI_UNAVAILABLE); leaving pending for retry`,
-      );
+      logger.warn("ai.unavailable_left_pending", {
+        sessionId: id.toString(),
+        userId: input.userId,
+      });
       return { status: "pending", id: id.toString() };
     }
 
@@ -152,4 +200,3 @@ export async function generateStudySession(input: {
     throw err;
   }
 }
-

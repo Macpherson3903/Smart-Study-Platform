@@ -13,7 +13,6 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard" },
   { id: "new", label: "New Session", href: "/sessions/new" },
   { id: "sessions", label: "History", href: "/sessions" },
-  { id: "flashcards", label: "Flashcards", href: "/flashcards", disabled: true },
+  { id: "flashcards", label: "Flashcards", href: "/flashcards" },
   { id: "settings", label: "Settings", href: "/settings" },
 ];
-

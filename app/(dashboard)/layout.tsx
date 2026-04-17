@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
+
 import { DashboardShell } from "@/components/shell/DashboardShell";
+
+export const metadata: Metadata = {
+  robots: { index: false },
+};
 
 export default function DashboardLayout({
   children,
@@ -7,4 +13,3 @@ export default function DashboardLayout({
 }) {
   return <DashboardShell>{children}</DashboardShell>;
 }
-

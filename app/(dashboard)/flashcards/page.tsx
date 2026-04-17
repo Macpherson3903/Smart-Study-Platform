@@ -1,6 +1,31 @@
-import { Card, CardContent } from "@/components/ui/Card";
+import type { Metadata } from "next";
 
-export default function FlashcardsPage() {
+import { FlashcardReviewer } from "@/components/features/flashcards/FlashcardReviewer";
+import { getUserIdOrThrow } from "@/lib/auth";
+import { listStudySessions } from "@/server/services/studySessionService";
+
+export const metadata: Metadata = { title: "Flashcards" };
+
+export default async function FlashcardsPage() {
+  const userId = await getUserIdOrThrow();
+
+  const { sessions } = await listStudySessions({
+    userId,
+    limit: 50,
+    includeResult: true,
+  });
+
+  const withFlashcards = sessions
+    .filter(
+      (s) =>
+        s.status === "complete" && s.result && s.result.flashcards.length > 0,
+    )
+    .map((s) => ({
+      sessionId: s.id,
+      preview: s.inputTextPreview,
+      flashcards: s.result!.flashcards,
+    }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,16 +33,11 @@ export default function FlashcardsPage() {
           Flashcards
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          A dedicated flashcard mode will be added in a future phase.
+          Review flashcards from your study sessions. Click a card to flip it.
         </p>
       </div>
 
-      <Card className="border-dashed">
-        <CardContent className="py-10 text-center text-sm text-slate-600">
-          Coming soon.
-        </CardContent>
-      </Card>
+      <FlashcardReviewer sessions={withFlashcards} />
     </div>
   );
 }
-

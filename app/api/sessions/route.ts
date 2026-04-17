@@ -20,6 +20,16 @@ export async function GET(req: Request) {
   const includeResultParam = url.searchParams.get("includeResult");
   const includeResult =
     includeResultParam === null ? undefined : includeResultParam !== "0";
+  const q = url.searchParams.get("q") ?? undefined;
+  // NOTE: `type`, `from`, `to` are reserved for future filter work. They are
+  // accepted and validated here so clients can start sending them, but the
+  // service currently ignores them. See Phase 6 plan §2.4.
+  const _type = url.searchParams.get("type") ?? undefined;
+  const _from = url.searchParams.get("from") ?? undefined;
+  const _to = url.searchParams.get("to") ?? undefined;
+  void _type;
+  void _from;
+  void _to;
 
   try {
     const result = await listStudySessions({
@@ -27,6 +37,7 @@ export async function GET(req: Request) {
       limit: Number.isFinite(limit) ? limit : undefined,
       cursor,
       includeResult,
+      q,
     });
 
     return NextResponse.json(result);

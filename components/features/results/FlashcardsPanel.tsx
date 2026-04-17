@@ -3,17 +3,18 @@
 import type { StudyContent } from "@/lib/ai/studyContentSchema";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export function FlashcardsPanel(props: { content: StudyContent }) {
   const flashcards = props.content.flashcards ?? [];
 
   if (flashcards.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-10 text-center text-sm text-slate-600">
-          Flashcards were not generated for this session.
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="No flashcards in this session"
+        description="Generate a new session with flashcards enabled to study with cards."
+        action={{ label: "New session", href: "/sessions/new" }}
+      />
     );
   }
 
@@ -25,7 +26,9 @@ export function FlashcardsPanel(props: { content: StudyContent }) {
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Front
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">{f.front}</p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {f.front}
+            </p>
           </CardHeader>
           <CardContent className="pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -38,4 +41,3 @@ export function FlashcardsPanel(props: { content: StudyContent }) {
     </div>
   );
 }
-

@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { StudyInputForm } from "@/components/features/generation/StudyInputForm";
+
+export const metadata: Metadata = { title: "New Session" };
 
 export default function NewSessionPage() {
   return (
@@ -16,4 +20,3 @@ export default function NewSessionPage() {
     </div>
   );
 }
-

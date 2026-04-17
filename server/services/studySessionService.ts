@@ -3,8 +3,10 @@ import "server-only";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
+import { normalizeStudyContentFromStorage } from "@/lib/ai/studyContentSchema";
 import type { StudySessionListItem } from "@/models/StudySession";
 import {
+  deleteStudySessionById as repoDeleteById,
   ensureStudySessionIndexes,
   findStudySessionById,
   findStudySessionsByUserIdPaginated,
@@ -59,11 +61,14 @@ function decodeCursor(encoded: string): StudySessionCursor {
   return { createdAt, id: new ObjectId(id) };
 }
 
+const SEARCH_MAX_CHARS = 100;
+
 export async function listStudySessions(input: {
   userId: string;
   limit?: number;
   cursor?: string;
   includeResult?: boolean;
+  q?: string;
 }): Promise<{
   sessions: StudySessionListItem[];
   pageInfo: { hasMore: boolean; nextCursor?: string };
@@ -75,10 +80,14 @@ export async function listStudySessions(input: {
 
   const cursor = input.cursor ? decodeCursor(input.cursor) : undefined;
 
+  // Trim & cap the query to bound memory/index work regardless of the caller.
+  const q = input.q?.trim().slice(0, SEARCH_MAX_CHARS);
+
   const page = await findStudySessionsByUserIdPaginated({
     userId: input.userId,
     limit,
     cursor,
+    q: q && q.length > 0 ? q : undefined,
   });
 
   const sessions: StudySessionListItem[] = page.sessions.map((s) => ({
@@ -92,7 +101,7 @@ export async function listStudySessions(input: {
       input.includeResult === false
         ? undefined
         : s.status === "complete" && "result" in s
-          ? s.result
+          ? normalizeStudyContentFromStorage(s.result)
           : undefined,
     error: s.status === "error" && "error" in s ? s.error : undefined,
     createdAt: s.createdAt.toISOString(),
@@ -103,7 +112,10 @@ export async function listStudySessions(input: {
     sessions,
     pageInfo: {
       hasMore: page.hasMore,
-      nextCursor: page.hasMore && page.nextCursor ? encodeCursor(page.nextCursor) : undefined,
+      nextCursor:
+        page.hasMore && page.nextCursor
+          ? encodeCursor(page.nextCursor)
+          : undefined,
     },
   };
 }
@@ -130,12 +142,13 @@ export async function getStudySessionById(input: {
       0,
       INPUT_TEXT_PREVIEW_CHARS,
     ),
+    inputText: doc.status === "error" ? doc.inputText : undefined,
     status: doc.status,
     result:
       input.includeResult === false
         ? undefined
         : doc.status === "complete" && "result" in doc
-          ? doc.result
+          ? normalizeStudyContentFromStorage(doc.result)
           : undefined,
     error: doc.status === "error" && "error" in doc ? doc.error : undefined,
     createdAt: doc.createdAt.toISOString(),
@@ -145,3 +158,10 @@ export async function getStudySessionById(input: {
   return item;
 }
 
+export async function deleteStudySession(input: {
+  userId: string;
+  id: string;
+}): Promise<boolean> {
+  if (!ObjectId.isValid(input.id)) return false;
+  return repoDeleteById({ userId: input.userId, id: toObjectId(input.id) });
+}

@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { Card, CardContent } from "@/components/ui/Card";
+
+export const metadata: Metadata = { title: "Settings" };
 
 export default function SettingsPage() {
   return (
@@ -20,4 +24,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

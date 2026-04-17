@@ -8,10 +8,7 @@ import { BrandMark } from "@/components/brand/BrandMark";
 import { DASHBOARD_NAV_ITEMS } from "@/config/navigation";
 import { cn } from "@/lib/cn";
 
-export function Sidebar(props: {
-  mobileOpen: boolean;
-  onClose: () => void;
-}) {
+export function Sidebar(props: { mobileOpen: boolean; onClose: () => void }) {
   return (
     <>
       <DesktopSidebar />
@@ -63,7 +60,11 @@ function MobileSidebar(props: { mobileOpen: boolean; onClose: () => void }) {
   if (!props.mobileOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 lg:hidden"
+      role="dialog"
+      aria-modal="true"
+    >
       <button
         type="button"
         className="absolute inset-0 bg-slate-900/30"
@@ -172,4 +173,3 @@ function CloseIcon() {
     </svg>
   );
 }
-

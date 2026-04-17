@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { toast } from "@/lib/toast";
 
 export function CopyButton(props: {
   text: string;
@@ -15,9 +16,12 @@ export function CopyButton(props: {
     try {
       await navigator.clipboard.writeText(props.text);
       setCopied(true);
+      toast.success("Copied to clipboard");
       window.setTimeout(() => setCopied(false), 1200);
     } catch {
-      // Fallback: do nothing; clipboard may be blocked in some contexts.
+      toast.error("Couldn’t copy", {
+        description: "Clipboard access was blocked by your browser.",
+      });
     }
   }
 
@@ -29,8 +33,7 @@ export function CopyButton(props: {
       onClick={onCopy}
       className={props.className}
     >
-      {copied ? "Copied" : props.label ?? "Copy"}
+      {copied ? "Copied" : (props.label ?? "Copy")}
     </Button>
   );
 }
-

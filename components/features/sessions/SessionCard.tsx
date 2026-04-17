@@ -49,4 +49,3 @@ function truncate(text: string, maxChars: number) {
     ? `${normalized.slice(0, maxChars - 1)}…`
     : normalized;
 }
-

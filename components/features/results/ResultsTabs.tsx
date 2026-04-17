@@ -19,8 +19,14 @@ export function ResultsTabs(props: {
 
   const copyAll = buildCopyAll(content);
   const copySummary = content.summary?.trim() ?? "";
-  const copyKeyPoints = (content.key_points ?? []).map((p) => `- ${p}`).join("\n");
-  const copyQuestions = (content.questions ?? []).map((q, i) => `${i + 1}. ${q}`).join("\n");
+  const copyKeyPoints = (content.key_points ?? [])
+    .map((p) => `- ${p}`)
+    .join("\n");
+  const copyQuestions = (content.questions ?? [])
+    .map(
+      (q, i) => `${i + 1}. ${q.question}${q.answer ? `\n   ${q.answer}` : ""}`,
+    )
+    .join("\n\n");
   const copyFlashcards = (content.flashcards ?? [])
     .map((f, i) => `${i + 1}. ${f.front}\n   ${f.back}`)
     .join("\n\n");
@@ -110,8 +116,11 @@ function buildCopyAll(content: StudyContent) {
   }
   if ((content.questions ?? []).length > 0) {
     lines.push("Questions");
-    content.questions.forEach((q, i) => lines.push(`${i + 1}. ${q}`));
+    content.questions.forEach((q, i) => {
+      lines.push(`${i + 1}. ${q.question}`);
+      if (q.answer) lines.push(`   ${q.answer}`);
+      lines.push("");
+    });
   }
   return lines.join("\n").trim();
 }
-
