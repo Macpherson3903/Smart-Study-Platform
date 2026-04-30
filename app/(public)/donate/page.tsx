@@ -7,13 +7,29 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { getOptionalUserId } from "@/lib/auth";
 
 const DONATE_URL =
-  process.env.NEXT_PUBLIC_FLUTTERWAVE_DONATION_URL ??
-  "https://flutterwave.com";
+  process.env.NEXT_PUBLIC_FLUTTERWAVE_DONATION_URL ?? "https://flutterwave.com";
 
 export const metadata: Metadata = {
   title: "Donate",
   description:
     "Support Smart Study Platform with a donation and help keep the platform improving for busy learners.",
+  alternates: {
+    canonical: "/donate",
+  },
+  openGraph: {
+    title: "Support Smart Study Platform",
+    description:
+      "Help keep AI-powered study support accessible for students balancing work and learning.",
+    url: "https://smartstudyplatform.vercel.app/donate",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Support Smart Study Platform",
+    description:
+      "Your donation helps improve reliable AI study tools for busy learners.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default async function DonatePage() {
@@ -37,8 +53,9 @@ export default async function DonatePage() {
             Support the mission
           </h1>
           <p className="mt-4 max-w-3xl text-lg text-white">
-            Your donation helps keep Smart Study Platform available and improving
-            for students who are balancing work, responsibilities, and learning.
+            Your donation helps keep Smart Study Platform available and
+            improving for students who are balancing work, responsibilities, and
+            learning.
           </p>
 
           <section className="launch-card mt-10 p-7">

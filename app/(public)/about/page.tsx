@@ -10,6 +10,23 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Why Smart Study Platform was built and the mission behind helping learners balance work and study.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About Smart Study Platform",
+    description:
+      "Learn why Smart Study Platform was built to support busy learners and working students.",
+    url: "https://smartstudyplatform.vercel.app/about",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Smart Study Platform",
+    description:
+      "Our mission is to help learners make progress even with limited study time.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default async function AboutPage() {
@@ -33,8 +50,8 @@ export default async function AboutPage() {
             About Smart Study Platform
           </h1>
           <p className="mt-4 max-w-3xl text-balance text-lg text-white">
-            This project started from a real challenge: managing work demands and
-            study goals at the same time, with limited time and energy.
+            This project started from a real challenge: managing work demands
+            and study goals at the same time, with limited time and energy.
           </p>
 
           <section className="launch-card mt-10 p-7">
@@ -80,8 +97,8 @@ export default async function AboutPage() {
               Join the mission
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-white">
-              If you are balancing work and study too, this platform is built for
-              you. Start free and build a better study rhythm.
+              If you are balancing work and study too, this platform is built
+              for you. Start free and build a better study rhythm.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink href={accountHref} variant="primary">

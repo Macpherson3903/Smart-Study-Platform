@@ -8,6 +8,23 @@ export const metadata: Metadata = {
   title: "Privacy",
   description:
     "How Smart Study Platform collects, uses, and protects your data.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  openGraph: {
+    title: "Privacy Policy | Smart Study Platform",
+    description:
+      "Read how Smart Study Platform collects, uses, and safeguards your data.",
+    url: "https://smartstudyplatform.vercel.app/privacy",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Smart Study Platform",
+    description:
+      "Understand how your account and study data are handled on Smart Study Platform.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default function PrivacyPage() {

@@ -7,6 +7,21 @@ import { PublicFooter } from "@/components/shell/PublicFooter";
 export const metadata: Metadata = {
   title: "Terms",
   description: "Terms of service for Smart Study Platform.",
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: "Terms of Service | Smart Study Platform",
+    description: "Read the terms that govern use of Smart Study Platform.",
+    url: "https://smartstudyplatform.vercel.app/terms",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Smart Study Platform",
+    description: "Usage terms and policies for Smart Study Platform.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default function TermsPage() {

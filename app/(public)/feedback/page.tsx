@@ -12,6 +12,22 @@ export const metadata: Metadata = {
   title: "Feedback",
   description:
     "Read user feedback, ratings, comments, and replies for Smart Study Platform.",
+  alternates: {
+    canonical: "/feedback",
+  },
+  openGraph: {
+    title: "Community Feedback | Smart Study Platform",
+    description:
+      "Explore user ratings and comments from learners using Smart Study Platform.",
+    url: "https://smartstudyplatform.vercel.app/feedback",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Community Feedback | Smart Study Platform",
+    description: "See what learners are saying about Smart Study Platform.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default async function FeedbackPage() {

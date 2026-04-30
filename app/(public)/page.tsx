@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { TestimonialsSection } from "@/components/features/feedback/TestimonialsSection";
 import { PublicFooter } from "@/components/shell/PublicFooter";
@@ -7,6 +8,65 @@ import { getOptionalUserId } from "@/lib/auth";
 import { WHATSAPP_COMMUNITY_URL } from "@/lib/community";
 import { listFeedbackTestimonials } from "@/server/services/feedbackService";
 import Link from "next/link";
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Smart Study Platform",
+  url: "https://smartstudyplatform.vercel.app",
+  logo: "https://smartstudyplatform.vercel.app/opengraph-image",
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Smart Study Platform",
+  url: "https://smartstudyplatform.vercel.app",
+  inLanguage: "en-NG",
+  publisher: {
+    "@type": "Organization",
+    name: "Smart Study Platform",
+  },
+};
+
+const softwareApplicationSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Smart Study Platform",
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "Web",
+  url: "https://smartstudyplatform.vercel.app",
+  description:
+    "AI-powered platform that generates summaries, flashcards, and practice questions for busy learners.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+};
+
+export const metadata: Metadata = {
+  title: "AI Study Tool for Busy Learners in Nigeria",
+  description:
+    "Turn long academic content into summaries, flashcards, and practice questions with Smart Study Platform.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "AI Study Tool for Busy Learners in Nigeria",
+    description:
+      "Smart Study Platform helps working students in Nigeria study faster with structured AI learning materials.",
+    url: "https://smartstudyplatform.vercel.app",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Study Tool for Busy Learners in Nigeria",
+    description:
+      "Study smarter with AI summaries, flashcards, and practice questions.",
+    images: ["/twitter-image"],
+  },
+};
 
 export default async function HomePage() {
   const userId = await getOptionalUserId();
@@ -18,6 +78,20 @@ export default async function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationSchema),
+        }}
+      />
       <main className="launch-surface min-h-dvh text-white">
         <div className="mx-auto max-w-6xl px-6 py-8 sm:px-8 lg:px-10">
           <header className="flex flex-wrap items-center justify-between gap-4">
@@ -51,19 +125,19 @@ export default async function HomePage() {
               Product launch
             </p>
             <h1 className="mt-6 max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-              Learn faster when your day is split between work and study.
+              AI study app for busy students and professionals in Nigeria.
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-white">
-              Smart Study Platform turns long academic text into clear summaries,
-              flashcards, and practice questions so you can make progress even in
-              short study windows.
+              Smart Study Platform turns long academic text into clear
+              summaries, flashcards, and practice questions to support exam prep
+              in Nigeria, even when you only have short study windows.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink href={primaryHref} variant="primary">
                 {primaryLabel}
               </ButtonLink>
               <ButtonLink href="/about" variant="secondary">
-                Why we built this
+                Why this study platform was built
               </ButtonLink>
             </div>
           </section>
@@ -72,15 +146,15 @@ export default async function HomePage() {
             <article className="launch-card p-6">
               <h2 className="text-lg font-semibold text-white">The problem</h2>
               <p className="mt-3 text-sm leading-6 text-white">
-                Balancing a job and study means limited time, mental fatigue, and
-                information overload.
+                Balancing a job and study means limited time, mental fatigue,
+                and information overload.
               </p>
             </article>
             <article className="launch-card p-6">
               <h2 className="text-lg font-semibold text-white">The solution</h2>
               <p className="mt-3 text-sm leading-6 text-white">
-                Paste your material once and get a complete study pack focused on
-                what matters most.
+                Paste your material once and get a complete study pack focused
+                on what matters most.
               </p>
             </article>
             <article className="launch-card p-6">
@@ -104,9 +178,7 @@ export default async function HomePage() {
                 </p>
               </article>
               <article className="launch-card p-5">
-                <p className="text-sm font-semibold text-white">
-                  Flashcards
-                </p>
+                <p className="text-sm font-semibold text-white">Flashcards</p>
                 <p className="mt-2 text-sm text-white">
                   Convert dense topics into quick active-recall prompts.
                 </p>
@@ -123,7 +195,9 @@ export default async function HomePage() {
           </section>
 
           <section className="pb-16">
-            <h2 className="text-2xl font-semibold tracking-tight">How it works</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              How it works
+            </h2>
             <ol className="mt-6 grid gap-4 md:grid-cols-3">
               <li className="launch-card p-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-purple-200">
@@ -141,7 +215,9 @@ export default async function HomePage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-purple-200">
                   Step 3
                 </p>
-                <p className="mt-2 font-semibold">Review and practice anytime</p>
+                <p className="mt-2 font-semibold">
+                  Review and practice anytime
+                </p>
               </li>
             </ol>
           </section>
@@ -166,7 +242,7 @@ export default async function HomePage() {
                 Join WhatsApp community
               </a>
               <ButtonLink href="/feedback" variant="secondary">
-                Leave feedback
+                Read learner feedback
               </ButtonLink>
             </div>
           </section>
@@ -177,8 +253,8 @@ export default async function HomePage() {
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-white">
               This platform was inspired by real time constraints: working long
-              hours while still needing to study effectively. Support the mission
-              or start using the platform today.
+              hours while still needing to study effectively. Support the
+              mission or start using the platform today.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink href={primaryHref} variant="primary">

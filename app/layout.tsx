@@ -11,15 +11,44 @@ export const metadata: Metadata = {
     template: "%s | Smart Study Platform",
   },
   description:
-    "AI-powered system that transforms raw academic content into structured learning materials.",
+    "Smart Study Platform helps Nigerian students and working professionals turn long academic text into summaries, flashcards, and practice questions.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://smartstudyplatform.vercel.app",
   ),
+  alternates: {
+    canonical: "/",
+  },
+  keywords: [
+    "AI study tool Nigeria",
+    "study app for working students",
+    "exam prep Nigeria",
+    "flashcards and practice questions",
+    "Smart Study Platform",
+  ],
+  category: "education",
   openGraph: {
     title: "Smart Study Platform",
     description:
-      "Transform raw academic content into structured learning materials in seconds.",
+      "AI-powered study support for busy learners in Nigeria: summaries, flashcards, and practice questions.",
     type: "website",
+    url: "https://smartstudyplatform.vercel.app",
+    siteName: "Smart Study Platform",
+    locale: "en_NG",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Smart Study Platform preview image",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Smart Study Platform",
+    description:
+      "Study faster with AI summaries, flashcards, and practice questions.",
+    images: ["/twitter-image"],
   },
 };
 
