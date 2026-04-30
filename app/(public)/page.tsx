@@ -2,7 +2,9 @@ import { BrandMark } from "@/components/brand/BrandMark";
 import { TestimonialsSection } from "@/components/features/feedback/TestimonialsSection";
 import { PublicFooter } from "@/components/shell/PublicFooter";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { buttonClasses } from "@/components/ui/buttonStyles";
 import { getOptionalUserId } from "@/lib/auth";
+import { WHATSAPP_COMMUNITY_URL } from "@/lib/community";
 import { listFeedbackTestimonials } from "@/server/services/feedbackService";
 import Link from "next/link";
 
@@ -145,6 +147,29 @@ export default async function HomePage() {
           </section>
 
           <TestimonialsSection testimonials={testimonials} />
+
+          <section className="launch-card mb-8 p-7">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Join the community
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-white">
+              Connect with other learners, share feedback, contribute ideas, and
+              get updates in our WhatsApp community.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                href={WHATSAPP_COMMUNITY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClasses({ variant: "primary" })}
+              >
+                Join WhatsApp community
+              </a>
+              <ButtonLink href="/feedback" variant="secondary">
+                Leave feedback
+              </ButtonLink>
+            </div>
+          </section>
 
           <section className="launch-card mb-8 p-7">
             <h2 className="text-2xl font-semibold tracking-tight">

@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/brand/BrandMark";
 import { FeedbackPageClient } from "@/components/features/feedback/FeedbackPageClient";
 import { PublicFooter } from "@/components/shell/PublicFooter";
 import { getOptionalUserId } from "@/lib/auth";
+import { WHATSAPP_COMMUNITY_URL } from "@/lib/community";
 import { listFeedbackReviews } from "@/server/services/feedbackService";
 
 export const metadata: Metadata = {
@@ -34,6 +35,18 @@ export default async function FeedbackPage() {
           </h1>
           <p className="mt-4 max-w-3xl text-lg text-white">
             Share your experience, rate the platform, and join the discussion.
+          </p>
+          <p className="mt-2 text-sm text-white">
+            Want faster community discussion?{" "}
+            <a
+              href={WHATSAPP_COMMUNITY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline"
+            >
+              Join our WhatsApp group
+            </a>
+            .
           </p>
 
           <section className="mt-8">
