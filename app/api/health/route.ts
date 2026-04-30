@@ -49,6 +49,21 @@ export async function GET() {
         throw new Error("Clerk keys are not set");
       }
     }),
+    timed("app-url-config", async () => {
+      const value = process.env.NEXT_PUBLIC_APP_URL;
+      if (!value) {
+        throw new Error("NEXT_PUBLIC_APP_URL is not set");
+      }
+      // Validate URL format to catch invalid production canonical origin.
+      new URL(value);
+    }),
+    timed("donation-url-config", async () => {
+      const value = process.env.NEXT_PUBLIC_FLUTTERWAVE_DONATION_URL;
+      if (!value) {
+        throw new Error("NEXT_PUBLIC_FLUTTERWAVE_DONATION_URL is not set");
+      }
+      new URL(value);
+    }),
   ]);
 
   const ok = checks.every((c) => c.ok);

@@ -63,3 +63,16 @@ Health check: `GET /api/health`
 - `npm run format`: Prettier write
 - `npm run format:check`: Prettier check
 - `npm run typecheck`: TypeScript typecheck
+- `npm run test`: Vitest
+- `npm run build`: production build validation
+
+## Production deployment (Vercel)
+
+Use the launch checklist in:
+
+- `docs/launch-playbook.md`
+- `docs/smoke-test-report-template.md`
+- `docs/soft-launch-ops-runbook.md`
+
+This includes required environment variables, Clerk/MongoDB/Flutterwave
+provider setup, smoke tests, observability expectations, and rollback steps.

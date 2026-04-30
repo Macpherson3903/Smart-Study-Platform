@@ -20,7 +20,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Run middleware on all routes except Next.js internals and static files.
+    // Run proxy on all routes except Next.js internals and static files.
     "/((?!_next|.*\\..*).*)",
     // Always run on API routes.
     "/api/(.*)",
