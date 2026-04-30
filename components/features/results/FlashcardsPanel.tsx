@@ -23,18 +23,18 @@ export function FlashcardsPanel(props: { content: StudyContent }) {
       {flashcards.map((f, i) => (
         <Card key={i}>
           <CardHeader className="pb-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white">
               Front
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
+            <p className="mt-2 text-sm font-semibold text-white">
               {f.front}
             </p>
           </CardHeader>
           <CardContent className="pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white">
               Back
             </p>
-            <p className="mt-2 text-sm text-slate-700">{f.back}</p>
+            <p className="mt-2 text-sm text-white">{f.back}</p>
           </CardContent>
         </Card>
       ))}

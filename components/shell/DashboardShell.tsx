@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { SupportPromptManager } from "@/components/features/support/SupportPromptManager";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
 
@@ -9,7 +10,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-900">
+    <div className="min-h-dvh launch-surface text-white">
+      <SupportPromptManager />
       <Sidebar
         mobileOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}

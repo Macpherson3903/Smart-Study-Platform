@@ -13,10 +13,10 @@ export function PracticeQuestion({
 }: PracticeQuestionProps) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#fff]">
         Question {currentIndex + 1} of {total}
       </p>
-      <p className="mt-3 text-lg font-semibold text-slate-900">
+      <p className="mt-3 text-lg font-semibold text-[#fff]">
         {questionText}
       </p>
     </div>

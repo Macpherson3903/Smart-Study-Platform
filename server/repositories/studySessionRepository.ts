@@ -230,6 +230,13 @@ export async function findStudySessionsByUserIdPaginated(input: {
   return { sessions: page, hasMore, nextCursor };
 }
 
+export async function countCompleteStudySessionsByUserId(input: {
+  userId: string;
+}): Promise<number> {
+  const col = await getCollection();
+  return await col.countDocuments({ userId: input.userId, status: "complete" });
+}
+
 export async function deleteStudySessionById(input: {
   userId: string;
   id: ObjectId;

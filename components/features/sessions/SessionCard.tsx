@@ -23,15 +23,15 @@ export function SessionCard(props: {
         props.className,
       )}
     >
-      <Card className="transition hover:border-slate-300 hover:shadow-sm">
+      <Card className="transition hover:border-purple-300/40 hover:bg-black/45">
         <CardContent className="py-4">
           <div className="flex items-center justify-between gap-3">
             <SessionStatusBadge status={session.status} />
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-white">
               {formatIsoDate(session.createdAt)}
             </span>
           </div>
-          <p className="mt-2 text-sm text-slate-700">{preview}</p>
+          <p className="mt-2 text-sm text-white">{preview}</p>
         </CardContent>
       </Card>
     </Link>

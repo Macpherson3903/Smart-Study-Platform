@@ -13,7 +13,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/sign-in", "/sign-up", "/privacy", "/terms"],
+        allow: [
+          "/",
+          "/about",
+          "/donate",
+          "/sign-in",
+          "/sign-up",
+          "/privacy",
+          "/terms",
+        ],
         // Dashboard surfaces are per-user and already set `robots: { index: false }`
         // via their layout metadata. Duplicating the rule here makes intent
         // explicit for crawlers that ignore meta tags.

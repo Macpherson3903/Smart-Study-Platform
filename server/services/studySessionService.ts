@@ -6,6 +6,7 @@ import { z } from "zod";
 import { normalizeStudyContentFromStorage } from "@/lib/ai/studyContentSchema";
 import type { StudySessionListItem } from "@/models/StudySession";
 import {
+  countCompleteStudySessionsByUserId,
   deleteStudySessionById as repoDeleteById,
   ensureStudySessionIndexes,
   findStudySessionById,
@@ -164,4 +165,11 @@ export async function deleteStudySession(input: {
 }): Promise<boolean> {
   if (!ObjectId.isValid(input.id)) return false;
   return repoDeleteById({ userId: input.userId, id: toObjectId(input.id) });
+}
+
+export async function countCompletedStudySessions(input: {
+  userId: string;
+}): Promise<number> {
+  await ensureStudySessionIndexes();
+  return await countCompleteStudySessionsByUserId({ userId: input.userId });
 }

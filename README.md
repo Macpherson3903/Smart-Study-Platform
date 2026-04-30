@@ -38,6 +38,7 @@ Required:
 Optional:
 
 - `MONGODB_DB` (defaults to `smart-study`)
+- `NEXT_PUBLIC_FLUTTERWAVE_DONATION_URL` (hosted Flutterwave link used by `/donate`)
 
 ### Run
 

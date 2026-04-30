@@ -111,18 +111,18 @@ export function SessionsList(props: {
     <div className="space-y-3">
       <Card>
         <CardContent className="p-0">
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-purple-300/20">
             {sessions.map((s) => (
               <li key={s.id}>
                 <Link
                   href={`/sessions/${s.id}`}
-                  className="flex items-start justify-between gap-4 p-4 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500/25"
+                  className="flex items-start justify-between gap-4 p-4 hover:bg-purple-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-300/30"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
+                    <p className="truncate text-sm font-semibold text-white">
                       {truncate(s.inputTextPreview, 140)}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-white">
                       {formatIsoDate(s.createdAt)}
                     </p>
                   </div>

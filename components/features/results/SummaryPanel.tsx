@@ -21,7 +21,7 @@ export function SummaryPanel(props: { content: StudyContent }) {
   return (
     <Card>
       <CardContent className="py-4">
-        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+        <p className="whitespace-pre-wrap text-sm leading-6 text-white">
           {text}
         </p>
       </CardContent>

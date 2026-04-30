@@ -86,12 +86,29 @@ export function PracticeMode({ sessionId, questions }: PracticeModeProps) {
         }),
       });
 
+      const body = (await res.json().catch(() => null)) as
+        | {
+            error?: unknown;
+            message?: unknown;
+            data?: FeedbackResult;
+            score?: unknown;
+          }
+        | null;
+
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? "Failed to evaluate answer");
+        throw new Error(
+          typeof body?.error === "string"
+            ? body.error
+            : typeof body?.message === "string"
+              ? body.message
+              : "Failed to evaluate answer",
+        );
       }
 
-      const feedback: FeedbackResult = await res.json();
+      const feedback =
+        body && typeof body === "object" && "data" in body
+          ? (body.data as FeedbackResult)
+          : (body as FeedbackResult);
 
       setQuestionStates((prev) =>
         prev.map((s, i) =>
@@ -156,7 +173,7 @@ export function PracticeMode({ sessionId, questions }: PracticeModeProps) {
                       questionStates[i].feedback!.score >= 70
                       ? "bg-emerald-400"
                       : "bg-amber-400"
-                    : "bg-slate-200"
+                    : "bg-purple-200/40"
               }`}
             />
           ))}
@@ -174,9 +191,9 @@ export function PracticeMode({ sessionId, questions }: PracticeModeProps) {
       </Card>
 
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-300/40 bg-red-900/30">
           <CardContent className="py-3">
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-100">{error}</p>
           </CardContent>
         </Card>
       )}
@@ -201,7 +218,7 @@ export function PracticeMode({ sessionId, questions }: PracticeModeProps) {
               <Skeleton className="h-3 w-10/12" />
               <Skeleton className="h-3 w-8/12" />
             </div>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-white">
               Evaluating your answer…
             </p>
           </CardContent>

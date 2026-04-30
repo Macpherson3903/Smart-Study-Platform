@@ -39,12 +39,21 @@ export function SessionResults(props: { initial: StudySessionListItem }) {
       const res = await fetch(`/api/sessions/${session.id}`, {
         method: "DELETE",
       });
-      if (res.ok || res.status === 204) {
+      if (res.ok) {
         toast.success("Session deleted");
         router.push("/sessions");
         return;
       }
+      const body = (await res.json().catch(() => null)) as
+        | { error?: unknown; message?: unknown }
+        | null;
       toast.error("Failed to delete session", {
+        description:
+          typeof body?.error === "string"
+            ? body.error
+            : typeof body?.message === "string"
+              ? body.message
+              : "Please try again.",
         action: { label: "Retry", onClick: () => void deleteSession() },
       });
     } catch {
@@ -62,12 +71,12 @@ export function SessionResults(props: { initial: StudySessionListItem }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h2 className="truncate text-pretty text-xl font-semibold tracking-tight text-slate-900">
+            <h2 className="truncate text-pretty text-xl font-semibold tracking-tight text-white">
               Session
             </h2>
             <SessionStatusBadge status={session.status} />
           </div>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-white">
             {session.inputTextPreview}
           </p>
         </div>
@@ -147,7 +156,7 @@ export function SessionResults(props: { initial: StudySessionListItem }) {
         />
       ) : null}
 
-      {content ? <ResultsTabs content={content} /> : null}
+      {content ? <ResultsTabs sessionId={session.id} content={content} /> : null}
     </div>
   );
 }

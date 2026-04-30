@@ -8,7 +8,12 @@ import {
 
 function authError() {
   return NextResponse.json(
-    { error: "Unauthenticated", code: "UNAUTHENTICATED" },
+    {
+      success: false,
+      error: "Unauthenticated",
+      message: "Unauthenticated",
+      code: "UNAUTHENTICATED",
+    },
     { status: 401 },
   );
 }
@@ -34,12 +39,21 @@ export async function GET(
 
   if (!session) {
     return NextResponse.json(
-      { error: "Not found", code: "NOT_FOUND" },
+      {
+        success: false,
+        error: "Not found",
+        message: "Not found",
+        code: "NOT_FOUND",
+      },
       { status: 404 },
     );
   }
 
-  return NextResponse.json(session);
+  return NextResponse.json({
+    success: true,
+    message: "Session fetched successfully.",
+    ...session,
+  });
 }
 
 export async function DELETE(
@@ -58,10 +72,18 @@ export async function DELETE(
 
   if (!deleted) {
     return NextResponse.json(
-      { error: "Not found", code: "NOT_FOUND" },
+      {
+        success: false,
+        error: "Not found",
+        message: "Not found",
+        code: "NOT_FOUND",
+      },
       { status: 404 },
     );
   }
 
-  return new NextResponse(null, { status: 204 });
+  return NextResponse.json(
+    { success: true, message: "Session deleted successfully." },
+    { status: 200 },
+  );
 }

@@ -7,11 +7,13 @@ import { FlashcardsPanel } from "@/components/features/results/FlashcardsPanel";
 import { KeyPointsPanel } from "@/components/features/results/KeyPointsPanel";
 import { QuestionsPanel } from "@/components/features/results/QuestionsPanel";
 import { SummaryPanel } from "@/components/features/results/SummaryPanel";
+import { Button } from "@/components/ui/Button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 
 type TabValue = "summary" | "key_points" | "flashcards" | "questions";
 
 export function ResultsTabs(props: {
+  sessionId: string;
   content: StudyContent;
   defaultTab?: TabValue;
 }) {
@@ -30,6 +32,7 @@ export function ResultsTabs(props: {
   const copyFlashcards = (content.flashcards ?? [])
     .map((f, i) => `${i + 1}. ${f.front}\n   ${f.back}`)
     .join("\n\n");
+  const exportContent = buildExportText(content);
 
   return (
     <Tabs defaultValue={props.defaultTab ?? "summary"}>
@@ -43,15 +46,20 @@ export function ResultsTabs(props: {
 
         <div className="flex flex-wrap items-center gap-2">
           <CopyButton text={copyAll} label="Copy all" />
-          <button
+          <Button
             type="button"
-            className="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-accent-700 opacity-60"
-            aria-disabled="true"
-            disabled
-            title="Export coming soon"
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              downloadFile({
+                filename: `study-session-${new Date().toISOString().slice(0, 10)}.txt`,
+                content: exportContent,
+                contentType: "text/plain;charset=utf-8",
+              })
+            }
           >
-            Export (soon)
-          </button>
+            Export (.txt)
+          </Button>
         </div>
       </div>
 
@@ -87,7 +95,7 @@ export function ResultsTabs(props: {
           <CopyButton text={copyQuestions} label="Copy questions" />
         </div>
         <div className="mt-3">
-          <QuestionsPanel content={content} />
+          <QuestionsPanel sessionId={props.sessionId} content={content} />
         </div>
       </TabsContent>
     </Tabs>
@@ -123,4 +131,52 @@ function buildCopyAll(content: StudyContent) {
     });
   }
   return lines.join("\n").trim();
+}
+
+function buildExportText(content: StudyContent) {
+  const lines: string[] = ["Study Session", "=============", ""];
+
+  if (content.summary?.trim()) {
+    lines.push("Summary", "-------", "", content.summary.trim(), "");
+  }
+
+  if ((content.key_points ?? []).length > 0) {
+    lines.push("Key Points", "----------", "");
+    for (const point of content.key_points) lines.push(`- ${point}`);
+    lines.push("");
+  }
+
+  if ((content.flashcards ?? []).length > 0) {
+    lines.push("Flashcards", "----------", "");
+    content.flashcards.forEach((card, i) => {
+      lines.push(`${i + 1}. Front: ${card.front}`);
+      lines.push(`   Back: ${card.back}`);
+      lines.push("");
+    });
+  }
+
+  if ((content.questions ?? []).length > 0) {
+    lines.push("Questions", "---------", "");
+    content.questions.forEach((question, i) => {
+      lines.push(`${i + 1}. ${question.question}`);
+      if (question.answer?.trim()) lines.push(`   Answer: ${question.answer.trim()}`);
+      lines.push("");
+    });
+  }
+
+  return lines.join("\n").trim();
+}
+
+function downloadFile(input: {
+  filename: string;
+  content: string;
+  contentType: string;
+}) {
+  const blob = new Blob([input.content], { type: input.contentType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = input.filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }

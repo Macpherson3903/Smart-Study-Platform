@@ -27,7 +27,7 @@ export function AnswerInput({
         disabled={disabled}
         rows={4}
         className={cn(
-          "w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:bg-slate-50",
+          "w-full resize-y rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm text-emerald-900 shadow-sm placeholder:text-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700/30 disabled:cursor-not-allowed disabled:bg-slate-50",
           disabled && "opacity-60",
         )}
       />

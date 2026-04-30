@@ -21,7 +21,7 @@ export function KeyPointsPanel(props: { content: StudyContent }) {
   return (
     <Card>
       <CardContent className="py-4">
-        <ul className="list-disc space-y-2 pl-5 text-sm text-slate-700">
+        <ul className="list-disc space-y-2 pl-5 text-sm text-white">
           {points.map((p, i) => (
             <li key={i}>{p}</li>
           ))}

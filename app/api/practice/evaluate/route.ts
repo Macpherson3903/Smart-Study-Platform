@@ -17,7 +17,14 @@ const evaluateRequestSchema = z
   .strict();
 
 function jsonError(message: string, code: string, status: number) {
-  return NextResponse.json({ error: message, code }, { status });
+  return NextResponse.json(
+    { success: false, error: message, message, code },
+    { status },
+  );
+}
+
+function jsonSuccess<T>(data: T, message: string, status = 200) {
+  return NextResponse.json({ success: true, message, data }, { status });
 }
 
 export async function POST(req: Request) {
@@ -51,7 +58,7 @@ export async function POST(req: Request) {
       userAnswer: parsed.data.userAnswer,
     });
 
-    return NextResponse.json(result);
+    return jsonSuccess(result, "Answer evaluated successfully.");
   } catch (err) {
     if (err instanceof GeminiError) {
       if (err.code === "GEMINI_RATE_LIMITED") {

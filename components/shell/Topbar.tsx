@@ -12,11 +12,11 @@ export function Topbar(props: { onMenu: () => void }) {
   const title = getTitleFromPathname(pathname);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-purple-300/20 bg-black/35 backdrop-blur">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <button
           type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 lg:hidden"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-purple-300/25 bg-black/40 text-white hover:bg-purple-500/20 lg:hidden"
           onClick={props.onMenu}
           aria-label="Open navigation"
         >
@@ -24,7 +24,7 @@ export function Topbar(props: { onMenu: () => void }) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-sm font-semibold tracking-tight text-slate-900">
+          <h1 className="truncate text-sm font-semibold tracking-tight text-white">
             {title}
           </h1>
         </div>

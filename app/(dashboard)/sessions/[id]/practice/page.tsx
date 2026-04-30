@@ -43,10 +43,10 @@ export default async function SessionPracticePage(props: {
       </div>
 
       <div>
-        <h2 className="text-pretty text-xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-pretty text-xl font-semibold tracking-tight text-white">
           Practice Mode
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-white">
           Answer each question and get AI-powered feedback on your response.
         </p>
       </div>

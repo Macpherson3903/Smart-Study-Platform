@@ -16,18 +16,17 @@ const REQUEST_MAX_CHARS = 20_000;
 
 type Status = "idle" | "submitting" | "polling" | "error";
 
-export function StudyInputForm() {
+export function StudyInputForm(props: {
+  initialOptions: GenerateOptions;
+  autoFocusDefault: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [inputText, setInputText] = useState("");
-  const [options, setOptions] = useState<GenerateOptions>({
-    summary: true,
-    questions: true,
-    flashcards: true,
-  });
+  const [options, setOptions] = useState<GenerateOptions>(props.initialOptions);
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +45,10 @@ export function StudyInputForm() {
 
   const shouldAutoFocus = useMemo(
     () =>
-      searchParams.get("focus") === "1" || searchParams.get("retry") === "1",
-    [searchParams],
+      props.autoFocusDefault ||
+      searchParams.get("focus") === "1" ||
+      searchParams.get("retry") === "1",
+    [props.autoFocusDefault, searchParams],
   );
 
   useEffect(() => {
@@ -122,8 +123,17 @@ export function StudyInputForm() {
     }
 
     const message =
-      typeof json === "object" && json && "error" in json
-        ? String((json as { error?: unknown }).error ?? "Request failed")
+      typeof json === "object" && json
+        ? String(
+            (
+              json as {
+                error?: unknown;
+                message?: unknown;
+              }
+            ).error ??
+              (json as { message?: unknown }).message ??
+              "Request failed",
+          )
         : "Request failed";
 
     setStatus("error");
@@ -162,10 +172,14 @@ export function StudyInputForm() {
             className="min-h-64"
           />
           <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-            <span className={remaining < 0 ? "text-red-700" : "text-slate-500"}>
+            <span
+              className={
+                remaining < 0 ? "text-red-300" : "text-white"
+              }
+            >
               {remaining.toLocaleString("en-US")} characters remaining
             </span>
-            <span className="text-slate-500">
+            <span className="text-white">
               {inputText.length.toLocaleString("en-US")}/
               {REQUEST_MAX_CHARS.toLocaleString("en-US")}
             </span>
@@ -175,8 +189,8 @@ export function StudyInputForm() {
 
       <Card>
         <CardContent className="py-4">
-          <p className="text-sm font-semibold text-slate-900">Outputs</p>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="text-sm font-semibold text-white">Outputs</p>
+          <p className="mt-1 text-sm text-white">
             Choose what to generate. You can regenerate anytime.
           </p>
           <div className="mt-4">
@@ -209,7 +223,7 @@ export function StudyInputForm() {
         </Alert>
       ) : null}
 
-      <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/80 p-3 backdrop-blur">
+      <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-purple-300/20 bg-black/60 p-3 backdrop-blur">
         <Button
           type="submit"
           isLoading={isBusy}

@@ -29,10 +29,10 @@ export default async function FlashcardsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-pretty text-xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-pretty text-xl font-semibold tracking-tight text-white">
           Flashcards
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-white">
           Review flashcards from your study sessions. Click a card to flip it.
         </p>
       </div>

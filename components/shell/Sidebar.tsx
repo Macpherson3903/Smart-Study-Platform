@@ -23,7 +23,7 @@ function DesktopSidebar() {
 
   return (
     <aside className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex h-full flex-col border-r border-slate-200 bg-white">
+      <div className="flex h-full flex-col border-r border-purple-300/20 bg-black/35 backdrop-blur-sm">
         <div className="flex h-14 items-center px-4">
           <Link
             href="/dashboard"
@@ -45,7 +45,7 @@ function DesktopSidebar() {
           ))}
         </nav>
 
-        <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
+        <div className="border-t border-purple-300/20 px-4 py-3 text-xs text-white">
           <span>v1 • MIT</span>
         </div>
       </div>
@@ -67,12 +67,12 @@ function MobileSidebar(props: { mobileOpen: boolean; onClose: () => void }) {
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/30"
+        className="absolute inset-0 bg-black/70"
         aria-label="Close navigation"
         onClick={props.onClose}
       />
 
-      <div className="relative h-full w-80 max-w-[85vw] bg-white shadow-xl">
+      <div className="relative h-full w-80 max-w-[85vw] border-r border-purple-300/20 bg-black/95 shadow-xl backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4">
           <Link
             href="/dashboard"
@@ -84,7 +84,7 @@ function MobileSidebar(props: { mobileOpen: boolean; onClose: () => void }) {
 
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-purple-300/25 bg-black/40 text-white hover:bg-purple-500/20"
             onClick={props.onClose}
             aria-label="Close navigation"
           >
@@ -122,17 +122,17 @@ function NavLink(props: {
   const className = cn(
     base,
     props.disabled
-      ? "cursor-not-allowed text-slate-400"
+      ? "cursor-not-allowed text-white"
       : props.active
-        ? "bg-brand-600 text-white"
-        : "text-slate-700 hover:bg-brand-50 hover:text-slate-900",
+        ? "bg-purple-600 text-white"
+        : "text-white hover:bg-purple-500/15 hover:text-white",
   );
 
   if (props.disabled) {
     return (
       <div className={className} aria-disabled="true">
         <span>{props.label}</span>
-        <span className="rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-semibold text-accent-700">
+        <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-semibold text-white">
           Soon
         </span>
       </div>

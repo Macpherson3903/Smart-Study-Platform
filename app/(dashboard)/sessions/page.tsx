@@ -27,10 +27,10 @@ export default async function SessionsPage(props: {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-pretty text-xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-pretty text-xl font-semibold tracking-tight text-white">
           Session history
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-white">
           Reopen any session to review its summary, flashcards, and questions.
         </p>
       </div>

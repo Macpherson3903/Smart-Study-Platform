@@ -32,18 +32,18 @@ export function PracticeComplete({
     <div className="space-y-6">
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#fff]">
             Practice complete
           </p>
-          <p className="mt-4 text-4xl font-bold text-slate-900">{avgScore}%</p>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-4 text-4xl font-bold text-[#fff]">{avgScore}%</p>
+          <p className="mt-2 text-sm text-[#fff]">
             {correct} of {answered.length} questions answered well
           </p>
         </CardContent>
       </Card>
 
       <div className="space-y-2">
-        <p className="text-sm font-semibold text-slate-700">
+        <p className="text-sm font-semibold text-[#fff]">
           Question breakdown
         </p>
         {feedbacks.map((fb, i) => (
@@ -63,7 +63,7 @@ export function PracticeComplete({
             >
               {fb ? fb.score : "–"}
             </div>
-            <p className="text-sm text-slate-700 line-clamp-1">
+            <p className="line-clamp-1 text-sm text-emerald-800">
               {questionTexts[i]}
             </p>
           </div>

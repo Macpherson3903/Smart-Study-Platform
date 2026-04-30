@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         <h2 className="text-pretty text-2xl font-semibold tracking-tight">
           Welcome back, {name}
         </h2>
-        <p className="mt-2 text-balance text-sm text-slate-600">
+        <p className="mt-2 text-balance text-sm text-white">
           Paste your notes, enable the outputs you want, and generate a clean
           study pack.
         </p>
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
 
       <section>
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-white">
             Quick actions
           </h3>
         </div>
@@ -57,12 +57,12 @@ export default async function DashboardPage() {
 
       <section>
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-white">
             Recent sessions
           </h3>
           <Link
             href="/sessions"
-            className="text-sm font-semibold text-slate-700 hover:text-slate-900 hover:underline"
+            className="text-sm font-semibold text-white hover:text-white hover:underline"
           >
             View all
           </Link>
@@ -96,12 +96,12 @@ function QuickActionCard(props: {
   return (
     <Link
       href={props.href}
-      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
+      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/30"
     >
-      <Card className="transition hover:border-slate-300 hover:shadow-sm">
+      <Card className="transition hover:border-purple-300/40 hover:bg-black/45">
         <CardContent className="py-4">
-          <p className="text-sm font-semibold text-slate-900">{props.title}</p>
-          <p className="mt-1 text-sm text-slate-600">{props.description}</p>
+          <p className="text-sm font-semibold text-white">{props.title}</p>
+          <p className="mt-1 text-sm text-white">{props.description}</p>
         </CardContent>
       </Card>
     </Link>

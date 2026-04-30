@@ -41,10 +41,10 @@ export default async function SessionFlashcardsPage(props: {
       </div>
 
       <div>
-        <h2 className="text-pretty text-xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-pretty text-xl font-semibold tracking-tight text-white">
           Study Flashcards
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-white">
           Click a card to flip it. Mark cards as known or review later.
         </p>
       </div>

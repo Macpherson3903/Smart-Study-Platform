@@ -19,7 +19,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       <div className={cn("relative w-full", className)}>
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400"
+          className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white"
         >
           <SearchIcon />
         </span>
@@ -30,7 +30,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           aria-label={props["aria-label"] ?? "Search"}
           {...props}
           className={cn(
-            "h-10 w-full rounded-md border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:bg-slate-50",
+            "h-10 w-full rounded-md border border-purple-300/25 bg-black/35 pl-10 pr-10 text-sm text-white shadow-sm placeholder:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/30 disabled:cursor-not-allowed disabled:bg-black/20",
           )}
         />
         {hasValue && onClear ? (
@@ -38,7 +38,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             type="button"
             aria-label="Clear search"
             onClick={onClear}
-            className="absolute inset-y-0 right-2 my-auto inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="absolute inset-y-0 right-2 my-auto inline-flex h-6 w-6 items-center justify-center rounded-md text-white hover:bg-purple-500/15 hover:text-white"
           >
             <ClearIcon />
           </button>

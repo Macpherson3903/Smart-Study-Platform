@@ -30,14 +30,14 @@ export function EmptyState(props: {
         {props.icon ? (
           <div
             aria-hidden="true"
-            className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500"
+            className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/20 text-white"
           >
             {props.icon}
           </div>
         ) : null}
-        <p className="text-sm font-semibold text-slate-900">{props.title}</p>
+        <p className="text-sm font-semibold text-white">{props.title}</p>
         {props.description ? (
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+          <p className="mx-auto mt-2 max-w-md text-sm text-white">
             {props.description}
           </p>
         ) : null}
@@ -65,7 +65,7 @@ function ActionLink(props: {
   const variantCls =
     props.variant === "primary"
       ? "bg-brand-600 text-white hover:bg-brand-700"
-      : "border border-slate-200 bg-white text-slate-900 hover:border-brand-200 hover:bg-brand-50";
+      : "border border-purple-300/25 bg-black/30 text-white hover:border-purple-300/40 hover:bg-purple-500/15";
 
   if ("href" in props.action && props.action.href) {
     return (

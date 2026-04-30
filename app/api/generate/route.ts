@@ -26,7 +26,19 @@ function jsonError(
   headers?: HeadersInit,
 ) {
   return NextResponse.json(
-    { error: message, code, requestId },
+    { success: false, error: message, message, code, requestId },
+    { status, headers },
+  );
+}
+
+function jsonSuccess<T>(
+  data: T,
+  message: string,
+  status = 200,
+  headers?: HeadersInit,
+) {
+  return NextResponse.json(
+    { success: true, message, ...data },
     { status, headers },
   );
 }
@@ -111,12 +123,11 @@ export async function POST(req: Request) {
     // Content is already validated inside generateStudyContent via
     // studyContentSchema before it is persisted, so we trust it here and
     // avoid the redundant safeParse.
-    return NextResponse.json(
+    return jsonSuccess(
       { id: created.id, content: created.result.content },
-      {
-        status: 201,
-        headers: { "x-request-id": requestId },
-      },
+      "Study session generated successfully.",
+      201,
+      { "x-request-id": requestId },
     );
   } catch (err) {
     if (err instanceof GeminiError) {

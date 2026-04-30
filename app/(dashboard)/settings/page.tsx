@@ -1,26 +1,27 @@
 import type { Metadata } from "next";
 
-import { Card, CardContent } from "@/components/ui/Card";
+import { getUserIdOrThrow } from "@/lib/auth";
+import { SettingsForm } from "@/components/features/settings/SettingsForm";
+import { getUserPreferences } from "@/server/services/userPreferencesService";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const userId = await getUserIdOrThrow();
+  const preferences = await getUserPreferences({ userId });
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-pretty text-xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-pretty text-xl font-semibold tracking-tight text-white">
           Settings
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Account settings and preferences will live here.
+        <p className="mt-2 text-sm text-white">
+          Recommended client-side defaults for your study workflow.
         </p>
       </div>
 
-      <Card className="border-dashed">
-        <CardContent className="py-10 text-center text-sm text-slate-600">
-          Coming soon.
-        </CardContent>
-      </Card>
+      <SettingsForm initialPreferences={preferences} />
     </div>
   );
 }

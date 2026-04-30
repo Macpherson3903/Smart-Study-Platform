@@ -8,7 +8,12 @@ export async function GET(req: Request) {
     userId = await getUserIdOrThrow();
   } catch {
     return NextResponse.json(
-      { error: "Unauthenticated", code: "UNAUTHENTICATED" },
+      {
+        success: false,
+        error: "Unauthenticated",
+        message: "Unauthenticated",
+        code: "UNAUTHENTICATED",
+      },
       { status: 401 },
     );
   }
@@ -40,17 +45,31 @@ export async function GET(req: Request) {
       q,
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      message: "Sessions fetched successfully.",
+      ...result,
+    });
   } catch (err) {
     if (err instanceof Error && err.message === "Invalid cursor") {
       return NextResponse.json(
-        { error: "Invalid cursor", code: "INVALID_CURSOR" },
+        {
+          success: false,
+          error: "Invalid cursor",
+          message: "Invalid cursor",
+          code: "INVALID_CURSOR",
+        },
         { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { error: "Internal server error", code: "INTERNAL_ERROR" },
+      {
+        success: false,
+        error: "Internal server error",
+        message: "Internal server error",
+        code: "INTERNAL_ERROR",
+      },
       { status: 500 },
     );
   }
